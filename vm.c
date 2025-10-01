@@ -385,6 +385,56 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   return 0;
 }
 
+//My function
+void 
+printpgdir(pde_t *pgdir)
+{
+	uint va = 0;
+	pde_t *pde;
+	pte_t *pgtab;
+	pte_t *pte;
+	char* w_flag;
+	char* u_flag;
+	
+	for(int i = 0; i < NPDENTRIES; ++i)
+	{
+		pde = &pgdir[PDX(va)];
+		if(*pde & PTE_P)
+		{
+			pgtab = (pte_t*)P2V(PTE_ADDR(*pde));
+			for(int j = 0; j < NPTENTRIES; ++j)
+			{
+				pte = &pgtab[PTX(va)];
+				if(*pte & PTE_P)
+				{
+					if(*pte & PTE_W)
+						w_flag = "w";
+					else w_flag = "-";
+					
+					if(*pte & PTE_U)
+						u_flag = "u";
+					else u_flag = "s";
+					
+					cprintf("[%d] -> 0x%x %s %s\n", j, (pte_t*)P2V(PTE_ADDR(pte)), w_flag, u_flag);
+				}
+				va += 1 << PTXSHIFT;
+				
+				if(va >= KERNBASE)
+				{
+					break;
+				}
+			}
+		}
+		va += 1 << PDXSHIFT;
+		
+		if(va >= KERNBASE)
+		{
+			break;
+		}
+	}
+}
+
+
 //PAGEBREAK!
 // Blank page.
 //PAGEBREAK!
