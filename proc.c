@@ -532,3 +532,11 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+
+int 
+getdate(struct rtcdate* r)
+{
+	cmostime(r);
+	return 0;
+}
