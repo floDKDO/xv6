@@ -100,3 +100,13 @@ sys_getdate(void)
 	
 	return getdate(r);
 }
+
+int 
+sys_shc(void)
+{
+  int v;
+  if(argint(0, &v) < 0)
+    return -1;
+
+  return shc(v);
+}

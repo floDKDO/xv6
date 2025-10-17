@@ -36,6 +36,26 @@ idtinit(void)
 void
 trap(struct trapframe *tf)
 {
+/*
+  static int counter_irq_timer = 0;
+  static int counter_irq_ide = 0;
+  
+  if(tf->trapno == T_IRQ0 + IRQ_TIMER) //= 32
+  {
+  	counter_irq_timer += 1;
+  }
+  else if(tf->trapno == T_IRQ0 + IRQ_IDE) //= 46
+  {
+  	counter_irq_ide += 1;
+  }
+  else
+  {
+  	cprintf("INT %d, privilège courant : %d\n", tf->trapno, (tf->cs) & 0003);
+  	//cprintf("INT %d: %d occurrence(s), privilège courant : %d\n", tf->trapno, counter_irq_timer, (tf->cs) & 0003);
+  	//cprintf("INT %d: %d occurrence(s), privilège courant : %d\n", tf->trapno, counter_irq_ide, (tf->cs) & 0003);
+  }
+*/
+
   if(tf->trapno == T_SYSCALL){
     if(myproc()->killed)
       exit();

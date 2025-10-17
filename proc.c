@@ -12,6 +12,13 @@ struct {
   struct proc proc[NPROC];
 } ptable;
 
+#define NSHC 10
+struct {
+  struct spinlock lock[NSHC];
+  struct spinlock lock_loop;
+  int shc[NSHC];
+} shctable;
+
 static struct proc *initproc;
 
 int nextpid = 1;
@@ -142,6 +149,8 @@ userinit(void)
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
 
+  p->shc = -1;
+
   // this assignment to p->state lets other cores
   // run this process. the acquire forces the above
   // writes to be visible, and the lock is also needed
@@ -211,6 +220,8 @@ fork(void)
   safestrcpy(np->name, curproc->name, sizeof(curproc->name));
 
   pid = np->pid;
+
+  np->shc = curproc->shc;
 
   acquire(&ptable.lock);
 
@@ -539,4 +550,50 @@ getdate(struct rtcdate* r)
 {
 	cmostime(r);
 	return 0;
+}
+
+
+void shcinit(void)
+{
+  initlock(&shctable.lock_loop, "shctable_loop");
+  for(int i = 0; i < NSHC; ++i)
+  {
+    initlock(&shctable.lock[i], "shctable");
+    shctable.shc[i] = -1;
+  }
+}
+
+
+int shc(int v)
+{
+  struct proc* p = myproc();
+  if(v < 0)
+  {
+    if(p->shc != -1)
+    {
+      shctable.shc[p->shc] = -1;
+    }
+    
+    acquire(&shctable.lock_loop);
+    for(int i = 0; i < NSHC; ++i)
+    {
+      if(shctable.shc[i] == -1)
+      {
+        shctable.shc[i] = 0;
+        p->shc = i;
+        release(&shctable.lock_loop);
+        return shctable.shc[i];
+      }
+    }
+    //here = no counter is available
+    release(&shctable.lock_loop);
+    return -1;
+  }
+  else
+  {
+    acquire(&shctable.lock[p->shc]);
+    shctable.shc[p->shc] += v;
+    release(&shctable.lock[p->shc]);
+    return shctable.shc[p->shc];
+  }
 }

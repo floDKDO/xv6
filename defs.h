@@ -121,6 +121,8 @@ int             wait(void);
 void            wakeup(void*);
 void            yield(void);
 int             getdate(struct rtcdate*);
+void            shcinit(void);
+int             shc(int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
