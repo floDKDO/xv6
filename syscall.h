@@ -21,4 +21,5 @@
 #define SYS_mkdir  20
 #define SYS_close  21
 #define SYS_getdate 22
-#define SYS_shc    23
+#define SYS_shc     23
+#define SYS_getrusage 24

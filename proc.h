@@ -34,6 +34,8 @@ struct context {
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
+#include "resource.h"
+
 // Per-process state
 struct proc {
   uint sz;                     // Size of process memory (bytes)
@@ -51,6 +53,7 @@ struct proc {
   char name[16];               // Process name (debugging)
   int shc;
   int exit_value;
+  struct rusage r;
 };
 
 // Process memory is laid out contiguously, low addresses first:

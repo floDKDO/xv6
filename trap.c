@@ -74,6 +74,17 @@ trap(struct trapframe *tf)
       wakeup(&ticks);
       release(&tickslock);
     }
+    if(myproc() && myproc()->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER)
+    {
+      if(((tf->cs) & 3) == DPL_USER)
+      {
+        myproc()->r.ru_utime += 1;
+      }
+      else if(((tf->cs) & 3) == 0)
+      {
+        myproc()->r.ru_stime += 1;
+      }
+    }
     lapiceoi();
     break;
   case T_IRQ0 + IRQ_IDE:

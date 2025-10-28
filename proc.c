@@ -96,6 +96,9 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
   p->exit_value = 0;
+  p->r.ru_maxrss = 0;
+  p->r.ru_stime = 0;
+  p->r.ru_utime = 0;
 
   release(&ptable.lock);
 
@@ -303,6 +306,48 @@ wait(int* n)
         {
           *n = p->exit_value;
         }
+
+        curproc->r.ru_stime += p->r.ru_stime;
+        curproc->r.ru_utime += p->r.ru_utime;
+
+        uint va = 0;
+        pde_t *pde;
+        pte_t *pgtab;
+        pte_t *pte;
+
+        int counter = 0;
+        
+        for(int i = 0; i < NPDENTRIES; ++i)
+        {
+          pde = &p->pgdir[PDX(va)];
+          if(*pde & PTE_P)
+          {
+            counter += 1;
+            pgtab = (pte_t*)P2V(PTE_ADDR(*pde));
+            for(int j = 0; j < NPTENTRIES; ++j)
+            {
+              pte = &pgtab[PTX(va)];
+              if(*pte & PTE_P)
+              {
+                counter += 1;
+              }
+              va += 1 << PTXSHIFT;
+              
+              if(va >= KERNBASE)
+              {
+                break;
+              }
+            }
+          }
+          va += 1 << PDXSHIFT;
+          
+          if(va >= KERNBASE)
+          {
+            break;
+          }
+        }
+        curproc->r.ru_maxrss = counter;
+
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
@@ -602,4 +647,13 @@ int shc(int v)
     release(&shctable.lock[p->shc]);
     return shctable.shc[p->shc];
   }
+}
+
+int getrusage(struct rusage* r)
+{
+  struct proc* p = myproc();
+  r->ru_stime = p->r.ru_stime;
+  r->ru_utime = p->r.ru_utime;
+  r->ru_maxrss = p->r.ru_maxrss;
+  return 0;
 }

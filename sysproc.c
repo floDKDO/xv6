@@ -118,3 +118,13 @@ sys_shc(void)
 
   return shc(v);
 }
+
+int 
+sys_getrusage(void)
+{
+  struct rusage* r;
+  if(argptr(0, (void*)&r, sizeof(struct rusage)) < 0)
+    return -1;
+
+  return getrusage(r);
+}
