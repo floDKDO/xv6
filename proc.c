@@ -95,6 +95,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->exit_value = 0;
 
   release(&ptable.lock);
 
@@ -236,7 +237,7 @@ fork(void)
 // An exited process remains in the zombie state
 // until its parent calls wait() to find out it exited.
 void
-exit(void)
+exit(int n)
 {
   struct proc *curproc = myproc();
   struct proc *p;
@@ -257,6 +258,7 @@ exit(void)
   iput(curproc->cwd);
   end_op();
   curproc->cwd = 0;
+  curproc->exit_value = n;
 
   acquire(&ptable.lock);
 
@@ -281,7 +283,7 @@ exit(void)
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
 int
-wait(void)
+wait(int* n)
 {
   struct proc *p;
   int havekids, pid;
@@ -297,6 +299,10 @@ wait(void)
       havekids = 1;
       if(p->state == ZOMBIE){
         // Found one.
+        if(n != 0)
+        {
+          *n = p->exit_value;
+        }
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;

@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 				{
 					shc(1);
 				}
-				exit();
+				exit(0);
 			
 			default:
 				break;
@@ -25,8 +25,8 @@ int main(int argc, char* argv[])
 	}
 	for(int i = 0; i < 4; ++i)
 	{
-		wait();
+		wait(0);
 	}
 	printf(1, "Valeur : %d\n", shc(0));
-	exit();
+	exit(0);
 }

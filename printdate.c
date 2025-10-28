@@ -8,5 +8,5 @@ int main(int argc, char* argv[])
 	getdate(&r);
 	printf(1, "Date: %d/%d/%d, %d:%d:%d\n", r.day, r.month, r.year, r.hour, r.minute, r.second);
 
-	exit();
+	exit(0);
 }
